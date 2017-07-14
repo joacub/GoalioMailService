@@ -1,14 +1,13 @@
 <?php
 namespace GoalioMailService\Mail\Service;
 
+use Interop\Container\ContainerInterface;
 use Zend\Mime\Mime;
+use Zend\Mime\Part;
+use Zend\ServiceManager\Factory\FactoryInterface;
 use Zend\ServiceManager\ServiceManager;
-use Zend\ServiceManager\ServiceManagerAwareInterface;
-use Zend\Mail\Message as MailMessage;
-use Zend\Mime\Message as MimeMessage;
-use Zend\Mime\Part as MimePart;
 
-class Message implements ServiceManagerAwareInterface {
+class Message {
 
     /**
      *
@@ -65,14 +64,14 @@ class Message implements ServiceManagerAwareInterface {
         $renderer = $this->getRenderer();
         $content = $renderer->render($nameOrModel, $values);
 
-        $text = new MimePart('');
+        $text = new Part('');
         $text->type = "text/plain";
 
-        $html = new MimePart($content);
+        $html = new Part($content);
         $html->type = "text/html; charset=UTF-8";
         $html->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
 
-        $body = new MimeMessage();
+        $body = new \Zend\Mime\Message();
         $body->setParts(array($text, $html));
 
         return $this->getDefaultMessage($from, 'utf-8', $to, $subject, $body);
@@ -105,7 +104,7 @@ class Message implements ServiceManagerAwareInterface {
      *
      * @param MailMessage $message
      */
-    public function send(MailMessage $message) {
+    public function send(\Zend\Mail\Message $message) {
         $this->getTransport()
             ->send($message);
     }
@@ -174,7 +173,7 @@ class Message implements ServiceManagerAwareInterface {
             $from = array('email' => $from, 'name' => $from);
         }
 
-        $message = new MailMessage();
+        $message = new \Zend\Mail\Message();
         $message->setFrom($from['email'], $from['name'])
             ->setEncoding($encoding)
             ->setSubject($subject)
@@ -182,5 +181,14 @@ class Message implements ServiceManagerAwareInterface {
             ->setTo($to);
 
         return $message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->setServiceManager($container);
+        return $this;
     }
 }

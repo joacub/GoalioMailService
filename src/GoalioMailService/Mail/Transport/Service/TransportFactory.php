@@ -1,6 +1,8 @@
 <?php
 namespace GoalioMailService\Mail\Transport\Service;
 
+use Interop\Container\ContainerInterface;
+use Tracy\Debugger;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\FactoryInterface;
 
@@ -22,5 +24,10 @@ class TransportFactory implements FactoryInterface {
         }
 
         return \Zend\Mail\Transport\Factory::create($options);
+    }
+
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    {
+        return $this->createService($container);
     }
 }
